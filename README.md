@@ -1,16 +1,24 @@
-# learn_flutter_intermediate
+# Hotelloop - Hotel Booking App
 
-A new Flutter project.
+A modern hotel booking application built with Flutter, designed to provide a seamless and intuitive user experience for finding and reserving hotels. This project serves as a practical example of building a full-featured mobile app from Figma designs to a working application, integrated with a backend API.
 
-## Getting Started
+## 🚀 Features
 
-This project is a starting point for a Flutter application.
+* **Onboarding**: A beautiful onboarding flow to guide new users through the app's key features.
+* **Authentication**: Secure and modern login and registration pages, including a password recovery flow with OTP verification.
+* **Homepage**: A dynamic homepage featuring personalized greetings, search functionality, and a curated list of popular and nearby hotels.
+* **Hotel Details**: A dedicated screen to view detailed information about a hotel, including image carousel, popular facilities, description, and pricing.
+* **User Profile**: A clean and organized profile page for managing user account information and settings.
+* **API Integration**: The application is built to connect with a backend API for fetching real-time data.
 
-A few resources to get you started if this is your first Flutter project:
+## 💻 Tech Stack
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+-   **Frontend**: `Flutter` (for cross-platform mobile development)
+-   **State Management**: `Riverpod`
+-   **API Client**: `Dio`
+-   **Routing**: `Navigator` (standard Flutter routing)
+-   **UI/UX**: Implemented based on custom `Figma` designs
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🛠️ Project Structure
+
+This project follows a modular, feature-based architecture to ensure scalability and maintainability.

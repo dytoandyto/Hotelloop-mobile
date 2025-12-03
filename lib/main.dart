@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:learn_flutter_intermediate/features/home/presentation/home_screen.dart';
 // import 'features/auth/presentation/login_screen.dart';
 import 'features/auth/presentation/splash_screen.dart';
+// import 'features/home/presentation/home_screen.dart';
 
 Future<void> main() async {
   
@@ -25,7 +27,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         ),
       title: 'Hotelloop',
-      home: const SplashScreen(),
+      home: const HomeScreen(),
     );
   }
 }

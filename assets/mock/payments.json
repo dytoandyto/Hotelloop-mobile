@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "booking_id": 1,
+    "method": "manual_transfer",
+    "status": "pending",
+    "proof_url": "https://example.com/bukti-transfer.jpg",
+    "paid_at": null
+  },
+  {
+    "id": 2,
+    "booking_id": 2,
+    "method": "credit_card",
+    "status": "paid",
+    "proof_url": "https://example.com/bukti-kartu-kredit.jpg",
+    "paid_at": "2025-08-04T12:00:00Z"
+  },
+  {
+    "id": 3,
+    "booking_id": 3,
+    "method": "manual_transfer",
+    "status": "pending",
+    "proof_url": "https://example.com/bukti-transfer.jpg",
+    "paid_at": null
+  },
+  {
+    "id": 4,
+    "booking_id": 4,
+    "method": "credit_card",
+    "status": "paid",
+    "proof_url": "https://example.com/bukti-kartu-kredit.jpg",
+    "paid_at": "2025-08-05T15:30:00Z"
+  }
+]

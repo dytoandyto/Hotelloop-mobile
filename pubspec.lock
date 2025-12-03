@@ -134,6 +134,70 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.2.1"
+  flutter_inappwebview:
+    dependency: "direct main"
+    description:
+      name: flutter_inappwebview
+      sha256: "80092d13d3e29b6227e25b67973c67c7210bd5e35c4b747ca908e31eb71a46d5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.1.5"
+  flutter_inappwebview_android:
+    dependency: transitive
+    description:
+      name: flutter_inappwebview_android
+      sha256: "62557c15a5c2db5d195cb3892aab74fcaec266d7b86d59a6f0027abd672cddba"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.3"
+  flutter_inappwebview_internal_annotations:
+    dependency: transitive
+    description:
+      name: flutter_inappwebview_internal_annotations
+      sha256: "787171d43f8af67864740b6f04166c13190aa74a1468a1f1f1e9ee5b90c359cd"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
+  flutter_inappwebview_ios:
+    dependency: transitive
+    description:
+      name: flutter_inappwebview_ios
+      sha256: "5818cf9b26cf0cbb0f62ff50772217d41ea8d3d9cc00279c45f8aabaa1b4025d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.2"
+  flutter_inappwebview_macos:
+    dependency: transitive
+    description:
+      name: flutter_inappwebview_macos
+      sha256: c1fbb86af1a3738e3541364d7d1866315ffb0468a1a77e34198c9be571287da1
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.2"
+  flutter_inappwebview_platform_interface:
+    dependency: transitive
+    description:
+      name: flutter_inappwebview_platform_interface
+      sha256: cf5323e194096b6ede7a1ca808c3e0a078e4b33cc3f6338977d75b4024ba2500
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.0+1"
+  flutter_inappwebview_web:
+    dependency: transitive
+    description:
+      name: flutter_inappwebview_web
+      sha256: "55f89c83b0a0d3b7893306b3bb545ba4770a4df018204917148ebb42dc14a598"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.2"
+  flutter_inappwebview_windows:
+    dependency: transitive
+    description:
+      name: flutter_inappwebview_windows
+      sha256: "8b4d3a46078a2cdc636c4a3d10d10f2a16882f6be607962dbfff8874d1642055"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.0"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -206,6 +270,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
+  flutter_shell:
+    dependency: "direct main"
+    description:
+      name: flutter_shell
+      sha256: "52516de2ea34af7a8eab1aa1695c066545fc7e5f73b76d55083595a1e7280766"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -252,10 +324,10 @@ packages:
     dependency: "direct main"
     description:
       name: intl
-      sha256: "3df61194eb431efc39c4ceba583b95633a403f46c9fd341e550ce0bfa50e9aa5"
+      sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
       url: "https://pub.dev"
     source: hosted
-    version: "0.20.2"
+    version: "0.19.0"
   js:
     dependency: transitive
     description:
@@ -320,6 +392,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.16.0"
+  midtrans:
+    dependency: "direct main"
+    description:
+      name: midtrans
+      sha256: "46a9f945503c7a4a51dac2c6cfebb9d4ae6367cd55b7bf2a54902cff0e1b48b3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
+  midtrans_sdk:
+    dependency: "direct main"
+    description:
+      name: midtrans_sdk
+      sha256: "76ceac7e0f02f53fed2c7b5fc64774186281521183887c1e6eb378875bf5d82b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
+  midtrans_snap:
+    dependency: "direct main"
+    description:
+      name: midtrans_snap
+      sha256: "041b3dac8277496c6b8f1c0252dc30c595cb11cded6f2aece8d4e959863ed4a3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   mime:
     dependency: transitive
     description:
@@ -493,6 +589,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.6"
+  toolkit:
+    dependency: transitive
+    description:
+      name: toolkit
+      sha256: fa58943e60ba2821de74eb3717172f5e21b6416550f1eab472133d606839f175
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.3"
   typed_data:
     dependency: transitive
     description:
@@ -509,6 +613,70 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.2"
+  url_launcher:
+    dependency: "direct main"
+    description:
+      name: url_launcher
+      sha256: f6a7e5c4835bb4e3026a04793a4199ca2d14c739ec378fdfe23fc8075d0439f8
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.3.2"
+  url_launcher_android:
+    dependency: transitive
+    description:
+      name: url_launcher_android
+      sha256: "767344bf3063897b5cf0db830e94f904528e6dd50a6dfaf839f0abf509009611"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.3.28"
+  url_launcher_ios:
+    dependency: transitive
+    description:
+      name: url_launcher_ios
+      sha256: cfde38aa257dae62ffe79c87fab20165dfdf6988c1d31b58ebf59b9106062aad
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.3.6"
+  url_launcher_linux:
+    dependency: transitive
+    description:
+      name: url_launcher_linux
+      sha256: d5e14138b3bc193a0f63c10a53c94b91d399df0512b1f29b94a043db7482384a
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.2.2"
+  url_launcher_macos:
+    dependency: transitive
+    description:
+      name: url_launcher_macos
+      sha256: "368adf46f71ad3c21b8f06614adb38346f193f3a59ba8fe9a2fd74133070ba18"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.2.5"
+  url_launcher_platform_interface:
+    dependency: transitive
+    description:
+      name: url_launcher_platform_interface
+      sha256: "552f8a1e663569be95a8190206a38187b531910283c3e982193e4f2733f01029"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.2"
+  url_launcher_web:
+    dependency: transitive
+    description:
+      name: url_launcher_web
+      sha256: "4bd2b7b4dc4d4d0b94e5babfffbca8eac1a126c7f3d6ecbc1a11013faa3abba2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.1"
+  url_launcher_windows:
+    dependency: transitive
+    description:
+      name: url_launcher_windows
+      sha256: "712c70ab1b99744ff066053cbe3e80c73332b38d46e5e945c98689b2e66fc15f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.5"
   vector_math:
     dependency: transitive
     description:
@@ -533,6 +701,46 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
+  webview_flutter:
+    dependency: "direct main"
+    description:
+      name: webview_flutter
+      sha256: c3e4fe614b1c814950ad07186007eff2f2e5dd2935eba7b9a9a1af8e5885f1ba
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.13.0"
+  webview_flutter_android:
+    dependency: transitive
+    description:
+      name: webview_flutter_android
+      sha256: "3fcca88ee2ae568807ebd42deed235bb8dd8e62b3e4d5caff67daa6bce062cca"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.10.9"
+  webview_flutter_platform_interface:
+    dependency: transitive
+    description:
+      name: webview_flutter_platform_interface
+      sha256: "63d26ee3aca7256a83ccb576a50272edd7cfc80573a4305caa98985feb493ee0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.14.0"
+  webview_flutter_web:
+    dependency: "direct main"
+    description:
+      name: webview_flutter_web
+      sha256: "18a7ccc1c31dd9a5c759a1b7217a2a1e04bd8f65712714a4070bfac19a23ca9e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.3+4"
+  webview_flutter_wkwebview:
+    dependency: transitive
+    description:
+      name: webview_flutter_wkwebview
+      sha256: a57b76a081bed3bf3a71a486bdf83642b00f1a7342043d50367cea68f338b1af
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.23.4"
   win32:
     dependency: transitive
     description:
@@ -566,5 +774,5 @@ packages:
     source: hosted
     version: "3.1.3"
 sdks:
-  dart: ">=3.8.1 <4.0.0"
-  flutter: ">=3.29.0"
+  dart: ">=3.9.0 <4.0.0"
+  flutter: ">=3.35.0"

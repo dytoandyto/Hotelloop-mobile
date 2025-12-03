@@ -1,0 +1,26 @@
+[
+  {
+    "booking_id": 1,
+    "old_status": "pending",
+    "new_status": "paid",
+    "changed_at": "2025-08-02T09:00:00Z"
+  },
+  {
+    "booking_id": 2,
+    "old_status": "confirmed",
+    "new_status": "cancelled",
+    "changed_at": "2025-08-04T11:00:00Z"
+  },
+  {
+    "booking_id": 1,
+    "old_status": "paid",
+    "new_status": "checked_in",
+    "changed_at": "2025-08-05T14:00:00Z"
+  },
+  {
+    "booking_id": 1,
+    "old_status": "checked_in",
+    "new_status": "checked_out",
+    "changed_at": "2025-08-07T12:00:00Z"
+  }
+]

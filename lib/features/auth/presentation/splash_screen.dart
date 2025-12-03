@@ -40,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen> {
             // Gunakan Image.asset jika logo ada di folder assets
             
             Image.asset(
-              'lib/assets/images/Logo_hotelloop-removebg.png', 
+              'assets/images/Logo_hotelloop-removebg.png', 
               width: 300,
               height: 300,
             ),

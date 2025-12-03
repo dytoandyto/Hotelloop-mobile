@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "Adrian Fatih",
+    "email": "adrian@example.com",
+    "role": "customer"
+  },
+  {
+    "id": 2,
+    "name": "Siti Aminah",
+    "email": "siti@example.com",
+    "role": "customer"
+  },
+  {
+    "id": 3,
+    "name": "Budi Santoso",
+    "email": "budi@example.com",
+    "role": "customer"
+  },
+  {
+    "id": 4,
+    "name": "Rina Wijaya",
+    "email": "rina@example.com",
+    "role": "customer"
+  },
+  {
+    "id": 5,
+    "name": "Dewi Lestari",
+    "email": "dewi@example.com",
+    "role": "customer"
+  }
+]

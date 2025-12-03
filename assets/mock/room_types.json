@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "hotel_id": 1,
+    "name": "Deluxe Room",
+    "description": "Kamar luas dengan balkon dan pemandangan kota.",
+    "price": 750000,
+    "capacity": 2
+  },
+    {
+        "id": 2,
+        "hotel_id": 1,
+        "name": "Standard Room",
+        "description": "Kamar nyaman dengan fasilitas dasar.",
+        "price": 500000,
+        "capacity": 2
+    },
+    {
+        "id": 3,
+        "hotel_id": 2,
+        "name": "Suite Room",
+        "description": "Kamar mewah dengan ruang tamu terpisah.",
+        "price": 1200000,
+        "capacity": 4
+    },
+    {
+        "id": 4,
+        "hotel_id": 2,
+        "name": "Single Room",
+        "description": "Kamar untuk satu orang dengan fasilitas lengkap.",
+        "price": 400000,
+        "capacity": 1
+    },
+    {
+        "id": 5,
+        "hotel_id": 3,
+        "name": "Family Room",
+        "description": "Kamar besar untuk keluarga dengan dua tempat tidur queen size.",
+        "price": 1000000,
+        "capacity": 5
+    }
+]

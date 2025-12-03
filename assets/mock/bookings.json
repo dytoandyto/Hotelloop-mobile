@@ -1,0 +1,36 @@
+[
+  {
+    "id": 1,
+    "user_id": 1,
+    "total_price": 1500000,
+    "status": "pending",
+    "created_at": "2025-08-02T08:00:00Z",
+    "details": [
+      {
+        "room_type_id": 1,
+        "check_in_date": "2025-08-05",
+        "check_out_date": "2025-08-07",
+        "qty": 1,
+        "price_per_night": 750000,
+        "subtotal": 1500000
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "user_id": 2,
+    "total_price": 1000000,
+    "status": "confirmed",
+    "created_at": "2025-08-03T10:30:00Z",
+    "details": [
+      {
+        "room_type_id": 2,
+        "check_in_date": "2025-08-10",
+        "check_out_date": "2025-08-12",
+        "qty": 2,
+        "price_per_night": 500000,
+        "subtotal": 1000000
+      }
+    ]
+  }
+]

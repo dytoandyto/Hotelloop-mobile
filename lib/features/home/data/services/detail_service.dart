@@ -1,3 +1,4 @@
+// lib/features/home/data/services/detail_service.dart
 import 'package:dio/dio.dart';
 import '../models/hotel_detail_model.dart';
 

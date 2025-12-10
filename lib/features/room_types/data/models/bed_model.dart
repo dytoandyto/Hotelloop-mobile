@@ -1,3 +1,4 @@
+// lib/features/room_types/data/models/bed_model.dart
 class BedModel {
   final String name;
   final int quantity;

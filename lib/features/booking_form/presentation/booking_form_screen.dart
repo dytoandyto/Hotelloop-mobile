@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:learn_flutter_intermediate/features/booking_form/provider/reservation_provider.dart';
 import 'package:learn_flutter_intermediate/features/home/data/models/hotel_model.dart';
 import 'package:learn_flutter_intermediate/features/room_types/data/models/room_type_model.dart';
+import 'package:learn_flutter_intermediate/features/room_types/data/models/bed_model.dart'; // WAJIB: Import BedModel
 import '../../payment/presentation/payment_screen.dart'; // Asumsi path PaymentSummaryScreen
 import 'package:intl/intl.dart';
-import 'dart:async'; // Diperlukan untuk Future
+import 'dart:async';
 import '../data/models/reservation_model.dart';
-
 
 // --- KONSTANTA GAYA ---
 const Color _googleBlue = Color(0xFF4285F4);
@@ -17,12 +17,14 @@ const double _smallRadius = 12.0;
 
 class BookingFormScreen extends ConsumerStatefulWidget {
   final RoomTypeModel roomType;
-  final HotelModel hotell; 
+  final HotelModel hotel;
+  final BedModel? selectedBed;
 
   const BookingFormScreen({
     super.key,
     required this.roomType,
-    required this.hotell,
+    required this.hotel,
+    this.selectedBed,
   });
 
   @override
@@ -46,7 +48,7 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
   final TextEditingController _notesController = TextEditingController();
 
   // Harga dinamis dari RoomTypeModel
-  final double _taxAndFees = 100000.0;
+  final double _taxAndFees = 0.0;
   final double _promoDiscount = 0.0;
 
   // --- LOGIKA HARGA DINAMIS (WEEKDAY/WEEKEND) ---
@@ -75,7 +77,6 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
   @override
   void initState() {
     super.initState();
-    // Set default tamu berdasarkan kapasitas kamar
     _numberOfGuests = widget.roomType.capacity >= 2 ? 2 : 1;
     _checkInDate = DateTime.now().add(const Duration(days: 1));
   }
@@ -91,11 +92,23 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
 
   // --- LOGIKA DATE PICKER ---
   Future<void> _selectCheckInDate(BuildContext context) async {
+    final DateTime now = DateTime.now();
+    final DateTime firstSelectableDate = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ); // Hari ini 00:00:00
+
+    // Tentukan initialDate agar tidak sebelum hari ini
+    final DateTime initialDate = _checkInDate.isBefore(firstSelectableDate)
+        ? firstSelectableDate
+        : _checkInDate;
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _checkInDate,
-      firstDate: DateTime.now().add(const Duration(days: 1)),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      initialDate: initialDate,
+      firstDate: firstSelectableDate, // Batasi ke hari ini
+      lastDate: now.add(const Duration(days: 365)),
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -123,9 +136,11 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
   Future<void> _submitReservation() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // FIX: Gunakan .notifier untuk mengakses method submitReservation
     final notifier = ref.read(reservationNotifierProvider.notifier);
 
     final dialogContext = context;
+    // Tampilkan loading dialog
     showDialog(
       context: dialogContext,
       barrierDismissible: false,
@@ -136,15 +151,17 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
     try {
       final checkInDateStr = DateFormat('yyyy-MM-dd').format(_checkInDate);
 
-      final reservations = await notifier.submitReservation(
-        roomTypeId: widget.roomType.id,
-        hotelId: widget.hotell.id,
+      // Panggil submitReservation dengan parameter yang sudah disesuaikan
+      final ReservationModel? reservations = await notifier.submitReservation(
+        hotelId: widget.hotel.id,
+        roomType: widget.roomType,
         nights: _numberOfNights,
         checkInDate: checkInDateStr,
         guestName: _fullNameController.text.trim(),
         guestEmail: _emailController.text.trim(),
         guestPhone: _phoneController.text.trim(),
-        
+        guests: _numberOfGuests,
+        // roomNumber dan notes tidak dikirim ke Notifier karena tidak dibutuhkan BE di payload minimal
       );
 
       if (dialogContext.mounted) Navigator.pop(dialogContext); // Tutup loading
@@ -154,17 +171,23 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
         Navigator.pushReplacement(
           dialogContext,
           MaterialPageRoute(
-            builder: (context) =>
-                PaymentSummaryScreen(reservation: reservations, hotel: widget.hotell, roomType: widget.roomType),
+            builder: (context) => PaymentSummaryScreen(
+              reservation: reservations,
+              hotel: widget.hotel,
+              roomType: widget.roomType,
+            ),
           ),
         );
       } else if (dialogContext.mounted) {
+        // Reservasi gagal (Notifier mengembalikan null)
         ScaffoldMessenger.of(dialogContext).showSnackBar(
           SnackBar(
             content: Text(
+              // Ambil error message dari state jika ada
               ref.read(reservationNotifierProvider).error ??
-                  'Gagal membuat reservasi.',
+                  'Gagal membuat reservasi. Coba lagi.',
             ),
+            backgroundColor: Colors.redAccent,
           ),
         );
       }
@@ -179,7 +202,7 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
   // --- WIDGET BUILD ---
   @override
   Widget build(BuildContext context) {
-    // Format tanggal & harga
+    // Format tanggal & harga (TETAP SAMA)
     final String totalPriceStr = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp',
@@ -198,6 +221,7 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
     final String checkInStr = DateFormat('EEE, MMM dd').format(_checkInDate);
     final String checkOutStr = DateFormat('EEE, MMM dd').format(_checkOutDate);
 
+    // Tonton state reservasi untuk status loading
     final reservationState = ref.watch(reservationNotifierProvider);
 
     return Scaffold(
@@ -229,7 +253,6 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Padding atas
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24.0,
@@ -238,7 +261,6 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // --- 1. DETAIL KONTAK TAMU ---
                           _buildSectionHeader('Detail Tamu & Kontak'),
                           const SizedBox(height: 16),
                           _buildContactInput(
@@ -266,27 +288,30 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
                           ),
                           const SizedBox(height: 32),
 
-                          // --- 2. DETAIL MENGINAP (REVISI TAMPILAN) ---
                           _buildSectionHeader('Detail Menginap'),
                           const SizedBox(height: 16),
                           _buildRevisedStayDetails(checkInStr, checkOutStr),
                           const SizedBox(height: 32),
 
-                          // --- 3. CATATAN & PERMINTAAN KHUSUS ---
+                          if (widget.selectedBed != null) ...[
+                            _buildSectionHeader('Konfigurasi Tempat Tidur'),
+                            const SizedBox(height: 16),
+                            _buildBedDetailCard(),
+                            const SizedBox(height: 32),
+                          ],
+
                           _buildNotesInput(),
                           const SizedBox(height: 32),
 
-                          // --- 4. DETAIL HOTEL & KAMAR ---
                           _buildSectionHeader('Detail Hotel & Kamar'),
                           const SizedBox(height: 16),
                           _buildHotelRoomHeader(
-                            widget.hotell.name,
+                            widget.hotel.name,
                             widget.roomType.name,
                             widget.roomType.imageUrl,
                           ),
                           const SizedBox(height: 32),
 
-                          // --- 5. RINGKASAN HARGA ---
                           _buildSectionHeader('Rincian Pembayaran'),
                           const SizedBox(height: 16),
                           _buildSummaryCard(subtotalStr, taxStr),
@@ -298,15 +323,13 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
               ),
             ),
 
-            // --- BOTTOM PAYMENT SECTION ---
             _buildBottomBar(context, totalPriceStr, reservationState.isLoading),
           ],
         ),
       ),
     );
   }
-
-  // --- SUB-WIDGETS ---
+  // --- SUB-WIDGETS (SAMA SEPERTI SEBELUMNYA) ---
 
   Widget _buildSectionHeader(String title) {
     return Text(
@@ -320,7 +343,36 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
     );
   }
 
-  // WIDGET BARU: Menampilkan Detail Hotel dan Kamar
+  Widget _buildBedDetailCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(_smallRadius),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.king_bed_outlined, color: _googleBlue),
+          const SizedBox(width: 12),
+          Text(
+            '${widget.selectedBed!.quantity}x ${widget.selectedBed!.name}',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontFamily: 'DMSans',
+              fontSize: 15,
+            ),
+          ),
+          const Spacer(),
+          Text(
+            '(${widget.roomType.capacity} Tamu Max)',
+            style: const TextStyle(color: _secondaryColor),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHotelRoomHeader(
     String hotelName,
     String roomName,
@@ -392,7 +444,6 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
     );
   }
 
-  // Input Kustom untuk Teks Kontak
   Widget _buildContactInput({
     required TextEditingController controller,
     required String label,
@@ -453,7 +504,6 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
     );
   }
 
-  // Input Catatan Tambahan
   Widget _buildNotesInput() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -494,7 +544,6 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
     );
   }
 
-  // Kartu Ringkasan Harga LENGKAP
   Widget _buildSummaryCard(String subtotalStr, String taxStr) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -557,7 +606,6 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
     );
   }
 
-  // WIDGET BARU: Bagian Detail Menginap (Tanggal, Tamu, Malam)
   Widget _buildRevisedStayDetails(String checkInStr, String checkOutStr) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -569,133 +617,73 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row 1: Jumlah Tamu (Interaktif)
+          // Row 1: Jumlah Tamu & Jumlah Malam (Interaktif)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.people_alt_rounded,
-                    color: _googleBlue,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Jumlah Tamu',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.black87,
-                      fontFamily: 'DMSans',
-                    ),
-                  ),
-                ],
-              ),
-              GestureDetector(
+              _buildInfoField(
+                label: 'Jumlah Tamu',
+                value: '$_numberOfGuests Tamu',
+                icon: Icons.people_alt_rounded,
                 onTap: () {
                   _showNumberPicker(
                     context,
                     'Pilih Jumlah Tamu',
                     _numberOfGuests,
                     (value) => setState(() => _numberOfGuests = value),
-                    max: widget.roomType.capacity, // Maksimal kapasitas kamar
+                    max: widget.roomType.capacity,
                   );
                 },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(_smallRadius),
-                  ),
-                  child: Text(
-                    '$_numberOfGuests Tamu',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: _googleBlue,
-                      fontFamily: 'DMSans',
-                    ),
-                  ),
-                ),
+              ),
+              const SizedBox(width: 16),
+              _buildInfoField(
+                label: 'Jumlah Malam',
+                value: '$_numberOfNights Malam',
+                icon: Icons.nightlight_round,
+                onTap: () {
+                  _showNumberPicker(
+                    context,
+                    'Pilih Jumlah Malam',
+                    _numberOfNights,
+                    (value) => setState(() => _numberOfNights = value),
+                    max: 10,
+                  );
+                },
               ),
             ],
           ),
 
           const Divider(height: 32),
 
-          // Row 2: Check-in, Malam, Check-out
+          // Row 2: Check-in, Check-out
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Check-in
-              _buildDateItem(
-                label: 'Check-in',
-                dateStr: checkInStr,
-                icon: Icons.login_rounded,
-                onTap: () => _selectCheckInDate(context),
+              Expanded(
+                child: _buildInfoField(
+                  label: 'Check-in',
+                  value: checkInStr,
+                  icon: Icons.login_rounded,
+                  onTap: () => _selectCheckInDate(context),
+                ),
               ),
-
-              // Durasi Malam (Di tengah)
-              Column(
-                children: [
-                  const Text(
-                    'Malam',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: _secondaryColor,
-                      fontFamily: 'DMSans',
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  GestureDetector(
-                    onTap: () {
-                      _showNumberPicker(
-                        context,
-                        'Pilih Jumlah Malam',
-                        _numberOfNights,
-                        (value) => setState(() => _numberOfNights = value),
-                        max: 10,
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _googleBlue,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Text(
-                        '$_numberOfNights',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          fontFamily: 'DMSans',
-                          fontSize: 15,
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildInfoField(
+                  label: 'Check-out',
+                  value: checkOutStr,
+                  icon: Icons.logout_rounded,
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Ubah Check-out dengan mengubah Jumlah Malam atau Check-in.',
                         ),
                       ),
-                    ),
-                  ),
-                ],
-              ),
-
-              // Check-out
-              _buildDateItem(
-                label: 'Check-out',
-                dateStr: checkOutStr,
-                icon: Icons.logout_rounded,
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Ubah Check-out dengan mengubah Jumlah Malam atau Check-in.',
-                      ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                  showArrow: false,
+                ),
               ),
             ],
           ),
@@ -704,42 +692,64 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
     );
   }
 
-  Widget _buildDateItem({
+  Widget _buildInfoField({
     required String label,
-    required String dateStr,
+    required String value,
     required IconData icon,
     required VoidCallback onTap,
+    bool showArrow = true,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Colors.grey.shade100, width: 1),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: _secondaryColor, size: 18),
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: _secondaryColor,
-                  fontFamily: 'DMSans',
-                ),
+              Row(
+                children: [
+                  Icon(icon, color: _googleBlue, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: _secondaryColor,
+                      fontFamily: 'DMSans',
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                      fontFamily: 'DMSans',
+                    ),
+                  ),
+                  if (showArrow)
+                    const Icon(
+                      Icons.keyboard_arrow_right,
+                      color: _secondaryColor,
+                      size: 20,
+                    ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            dateStr,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-              fontFamily: 'DMSans',
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -844,7 +854,11 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
     );
   }
 
-  Widget _buildBottomBar(BuildContext context, String totalPriceStr, bool isLoading) {
+  Widget _buildBottomBar(
+    BuildContext context,
+    String totalPriceStr,
+    bool isLoading,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
       decoration: BoxDecoration(
@@ -908,7 +922,7 @@ class _BookingFormScreenState extends ConsumerState<BookingFormScreen> {
                         ),
                       )
                     : const Text(
-                        'Bayar Sekarang',
+                        'Pesan Sekarang',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,

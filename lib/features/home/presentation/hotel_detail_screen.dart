@@ -1,11 +1,16 @@
+import 'dart:ui'; // Coba tambahkan ini
+import 'dart:math' as Math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// Asumsi path import ini benar:
+import 'package:intl/intl.dart';
+import 'package:learn_flutter_intermediate/features/home/data/models/hotel_detail_model.dart';
+import 'package:learn_flutter_intermediate/features/home/providers/detail_provider.dart';
+import 'package:learn_flutter_intermediate/features/room_types/data/models/price_model.dart';
+import 'package:learn_flutter_intermediate/features/room_types/data/models/room_type_model.dart';
+import 'package:learn_flutter_intermediate/features/room_types/presentation/room_selection_screen.dart';
 import 'package:learn_flutter_intermediate/features/room_types/provider/room_types_provider.dart';
-import '../../room_types/presentation/room_types.dart'; // Mengarah ke RoomSelectionScreen
-import '../../home/data/models/hotel_model.dart'; // Import HotelModel
-import '../../home/providers/detail_provider.dart';
-import 'dart:math';
+
+
 
 // --- KONSTANTA GAYA MODERN ---
 const Color _googleBlue = Color(0xFF4285F4);
@@ -13,15 +18,18 @@ const Color _secondaryColor = Color(0xFF6B6B6B);
 const double _modernRadius = 24.0;
 const double _smallRadius = 12.0;
 
+// =======================================================
+//                    HOTEL DETAIL SCREEN
+// =======================================================
+
 class HotelDetailScreen extends ConsumerWidget {
-  final int hotelId; // Harus menerima ID hotel dari HomeScreen
+  final int hotelId;
 
   const HotelDetailScreen({super.key, required this.hotelId});
 
-  // --- WIDGET UTAMA BUILD ---
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Menggunakan HotelModel sebagai tipe data
+    // Pastikan hotelDetailNotifierProvider mengembalikan HotelDetailModel
     final detailAsyncValue = ref.watch(hotelDetailNotifierProvider(hotelId));
 
     return Scaffold(
@@ -59,9 +67,6 @@ class HotelDetailScreen extends ConsumerWidget {
             ),
           ),
           data: (hotelDetail) {
-            // Data hotel sudah siap (bertipe HotelModel)
-
-            // Menggunakan imageUrls jika tersedia, jika tidak, gunakan imageUrl
             final List<String> images = hotelDetail.imageUrls.isNotEmpty
                 ? hotelDetail.imageUrls
                 : [hotelDetail.imageUrl];
@@ -74,7 +79,6 @@ class HotelDetailScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // MENGGUNAKAN ImageHeaderCarousel (StatefulWidget)
                       ImageHeaderCarousel(imageUrls: images),
                       Padding(
                         padding: const EdgeInsets.all(24.0),
@@ -85,12 +89,11 @@ class HotelDetailScreen extends ConsumerWidget {
                             const SizedBox(height: 16),
                             _buildAddress(hotelDetail),
                             const SizedBox(height: 24),
-                            // MENGGUNAKAN GRID FASILITAS BARU (Hanya Teks)
                             _buildFacilitiesGrid(hotelDetail.facilities),
                             const SizedBox(height: 32),
                             _buildDescription(hotelDetail),
                             const SizedBox(height: 32),
-                            _buildPriceCard(hotelDetail),
+                            _buildPriceCard(hotelDetail), 
                           ],
                         ),
                       ),
@@ -98,7 +101,7 @@ class HotelDetailScreen extends ConsumerWidget {
                   ),
                 ),
 
-                // 2. Tombol Back & Action di atas gambar (Fixed position)
+                // 2. Tombol Back & Action (Fixed position)
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 10,
                   left: 24,
@@ -133,7 +136,7 @@ class HotelDetailScreen extends ConsumerWidget {
     );
   }
 
-  // --- WIDGET IMPLEMENTATIONS ---
+  // --- IMPLEMENTASI WIDGET HELPER ---
 
   Widget _buildCircleButton({
     required IconData icon,
@@ -158,7 +161,7 @@ class HotelDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTitleAndRating(HotelModel hotelDetail) {
+  Widget _buildTitleAndRating(HotelDetailModel hotelDetail) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -212,7 +215,7 @@ class HotelDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAddress(HotelModel hotelDetail) {
+  Widget _buildAddress(HotelDetailModel hotelDetail) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -230,7 +233,6 @@ class HotelDetailScreen extends ConsumerWidget {
     );
   }
 
-  // --- REVISI: _buildFacilitiesGrid (Hanya Teks Menggunakan Wrap) ---
   Widget _buildFacilitiesGrid(List<String> facilities) {
     if (facilities.isEmpty) {
       return const SizedBox.shrink();
@@ -240,7 +242,7 @@ class HotelDetailScreen extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Facilities',
+          'Fasilitas',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -249,15 +251,14 @@ class HotelDetailScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         Wrap(
-          spacing: 8.0, // Jarak horizontal antar chip
-          runSpacing: 8.0, // Jarak vertikal antar baris chip
+          spacing: 8.0,
+          runSpacing: 8.0,
           children: facilities
               .map(
                 (name) => _FacilityTextButton(
                   label: name,
-                  // TODO: Implementasi navigasi ke halaman kategori fasilitas
                   onTap: () {
-                    debugPrint('Fasilitas $name diklik!'); 
+                    debugPrint('Fasilitas $name diklik!');
                   },
                 ),
               )
@@ -267,19 +268,12 @@ class HotelDetailScreen extends ConsumerWidget {
     );
   }
 
-  // Fungsi ini tidak digunakan lagi karena fasilitas hanya berupa teks
-  /*
-  IconData _getFacilityIcon(String name) {
-    // ... (logic ikon lama)
-  }
-  */
-
-  Widget _buildDescription(HotelModel hotelDetail) {
+  Widget _buildDescription(HotelDetailModel hotelDetail) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'About this hotel',
+          'Tentang Hotel',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -287,22 +281,21 @@ class HotelDetailScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Text(
-          hotelDetail.description,
-          style: const TextStyle(
-            color: _secondaryColor,
-            height: 1.6,
-            fontSize: 14,
-            fontFamily: 'DMSans',
-          ),
+        ExpandableText(
+          text: hotelDetail.description,
+          trimLines: 3, 
         ),
       ],
     );
   }
-
-  Widget _buildPriceCard(HotelModel hotelDetail) {
+  
+  // =======================================================
+  //                  LOGIKA PRICE CARD 
+  // =======================================================
+  Widget _buildPriceCard(HotelDetailModel hotelDetail) {
     return Consumer(
       builder: (context, ref, child) {
+        // Asumsi: roomTypeNotifierProvider mengembalikan List<RoomTypeModel>
         final roomTypesAsync = ref.watch(
           roomTypeNotifierProvider(hotelDetail.id),
         );
@@ -327,10 +320,51 @@ class HotelDetailScreen extends ConsumerWidget {
               style: TextStyle(color: Colors.red),
             ),
           ),
-          data: (roomTypes) {
-            final String price = roomTypes.isNotEmpty
-                ? roomTypes.first.formattedPrice
-                : hotelDetail.formattedPrice;
+          data: (List<RoomTypeModel> roomTypes) {
+            String priceDisplay;
+            
+            if (roomTypes.isEmpty) {
+              priceDisplay = hotelDetail.formattedPrice;
+            } else {
+              // 1. Kumpulkan semua harga (weekdayPrice dan weekendPrice) yang > 0
+              final List<int> validPrices = [];
+              
+              for (var roomType in roomTypes) {
+                final PriceModel priceModel = roomType.price; 
+                
+                // Ambil nilai floor (integer) dari harga
+                if (priceModel.weekdayPrice > 0) {
+                  validPrices.add(priceModel.weekdayPrice.floor());
+                }
+                if (priceModel.weekendPrice > 0) {
+                  validPrices.add(priceModel.weekendPrice.floor());
+                }
+              }
+
+              if (validPrices.isEmpty) {
+                priceDisplay = hotelDetail.formattedPrice;
+              } else {
+                // 2. Cari harga terendah dan tertinggi
+                final int minPrice = validPrices.reduce(Math.min);
+                final int maxPrice = validPrices.reduce(Math.max);
+                
+                // Konversi ke format Rupiah
+                final formatter = NumberFormat.currency(
+                  locale: 'id_ID',
+                  symbol: 'Rp',
+                  decimalDigits: 0,
+                );
+                
+                final String formattedMin = formatter.format(minPrice);
+                final String formattedMax = formatter.format(maxPrice);
+                
+                if (minPrice == maxPrice) {
+                  priceDisplay = formattedMin;
+                } else {
+                  priceDisplay = '$formattedMin - $formattedMax';
+                }
+              }
+            }
 
             return Container(
               width: double.infinity,
@@ -344,7 +378,7 @@ class HotelDetailScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Harga per Malam mulai dari',
+                    'Harga per Malam',
                     style: TextStyle(
                       color: _secondaryColor,
                       fontFamily: 'DMSans',
@@ -353,7 +387,7 @@ class HotelDetailScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    price, // HARGA DARI ROOM TYPE
+                    priceDisplay, 
                     style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w800,
@@ -393,7 +427,7 @@ class HotelDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBottomBar(BuildContext context, HotelModel hotelDetail) {
+  Widget _buildBottomBar(BuildContext context, HotelDetailModel hotelDetail) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
       decoration: BoxDecoration(
@@ -415,12 +449,12 @@ class HotelDetailScreen extends ConsumerWidget {
           Expanded(
             child: ElevatedButton(
               onPressed: () {
-                // Navigasi ke RoomSelectionScreen dan kirim hotelId
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        RoomSelectionScreen(hotelId: hotelDetail.id),
+                    // RoomSelectionScreen harus diimpor di atas
+                    builder: (context) => 
+                        RoomSelectionScreen(hotelId: hotelDetail.id), 
                   ),
                 );
               },
@@ -450,23 +484,25 @@ class HotelDetailScreen extends ConsumerWidget {
   }
 }
 
-// --- WIDGET BARU: _FacilityTextButton (Pengganti _ModernFacilityCard) ---
+
+// =======================================================
+//                  WIDGET PENDUKUNG
+// =======================================================
+
+// --- WIDGET: _FacilityTextButton ---
 class _FacilityTextButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _FacilityTextButton({
-    required this.label,
-    required this.onTap,
-  });
+  const _FacilityTextButton({required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.grey.shade100, // Background card
+      color: Colors.grey.shade100, 
       borderRadius: BorderRadius.circular(_smallRadius),
       child: InkWell(
-        onTap: onTap, // Sekarang bisa diklik
+        onTap: onTap, 
         borderRadius: BorderRadius.circular(_smallRadius),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -485,16 +521,11 @@ class _FacilityTextButton extends StatelessWidget {
   }
 }
 
-// --- WIDGET CAROUSEL LAMA (_ModernFacilityCard) DIHAPUS ---
-
-// --- WIDGET BARU: ImageHeaderCarousel (PENGGANTI _buildImageHeader) ---
+// --- WIDGET: ImageHeaderCarousel ---
 class ImageHeaderCarousel extends StatefulWidget {
   final List<String> imageUrls;
 
-  const ImageHeaderCarousel({
-    super.key,
-    required this.imageUrls,
-  });
+  const ImageHeaderCarousel({super.key, required this.imageUrls});
 
   @override
   State<ImageHeaderCarousel> createState() => _ImageHeaderCarouselState();
@@ -518,7 +549,9 @@ class _ImageHeaderCarouselState extends State<ImageHeaderCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    final int itemCount = widget.imageUrls.isEmpty ? 1 : widget.imageUrls.length;
+    final int itemCount = widget.imageUrls.isEmpty
+        ? 1
+        : widget.imageUrls.length;
 
     return SizedBox(
       height: 350,
@@ -545,13 +578,12 @@ class _ImageHeaderCarouselState extends State<ImageHeaderCarousel> {
 
                 return GestureDetector(
                   onTap: () {
-                    // Ketika gambar di-tap, navigasi ke FullScreenImageViewer
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => FullScreenImageViewer(
-                          initialImageIndex: index, // Tampilkan gambar yang sedang aktif
-                          imageUrls: widget.imageUrls, // Kirim semua URL gambar
+                          initialImageIndex: index, 
+                          imageUrls: widget.imageUrls, 
                         ),
                       ),
                     );
@@ -608,7 +640,8 @@ class _ImageHeaderCarouselState extends State<ImageHeaderCarousel> {
   }
 }
 
-// --- WIDGET BARU: FullScreenImageViewer (untuk detail gambar dan zoom) ---
+
+// --- WIDGET: FullScreenImageViewer ---
 class FullScreenImageViewer extends StatefulWidget {
   final List<String> imageUrls;
   final int initialImageIndex;
@@ -631,8 +664,9 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
   void initState() {
     super.initState();
     _currentFullScreenPageIndex = widget.initialImageIndex;
-    _fullScreenPageController =
-        PageController(initialPage: widget.initialImageIndex);
+    _fullScreenPageController = PageController(
+      initialPage: widget.initialImageIndex,
+    );
   }
 
   @override
@@ -644,10 +678,9 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Background hitam untuk tampilan gambar
+      backgroundColor: Colors.black, 
       body: Stack(
         children: [
-          // PageView untuk beralih antar gambar di mode full screen
           PageView.builder(
             controller: _fullScreenPageController,
             itemCount: widget.imageUrls.length,
@@ -660,21 +693,20 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
               final url = widget.imageUrls[index];
               return Center(
                 child: InteractiveViewer(
-                  // Mengizinkan zoom dan pan
-                  panEnabled: true, // Izinkan geser
-                  boundaryMargin: const EdgeInsets.all(20), // Margin agar tidak keluar layar
-                  minScale: 0.8, // Skala minimum
-                  maxScale: 4.0, // Skala maksimum
+                  panEnabled: true, 
+                  boundaryMargin: const EdgeInsets.all(20),
+                  minScale: 0.8, 
+                  maxScale: 4.0, 
                   child: Image.network(
                     url,
-                    fit: BoxFit.contain, // Gambar akan menyesuaikan layar tanpa terpotong
+                    fit: BoxFit.contain, 
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       return Center(
                         child: CircularProgressIndicator(
                           value: loadingProgress.expectedTotalBytes != null
                               ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
+                                    loadingProgress.expectedTotalBytes!
                               : null,
                           color: Colors.white,
                         ),
@@ -692,7 +724,6 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
               );
             },
           ),
-          // Tombol Close di pojok kiri atas
           Positioned(
             top: MediaQuery.of(context).padding.top + 10,
             left: 10,
@@ -701,7 +732,6 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
               onPressed: () => Navigator.pop(context),
             ),
           ),
-          // Indikator halaman di bagian bawah (opsional, jika ada banyak gambar)
           if (widget.imageUrls.length > 1)
             Positioned(
               bottom: 20,
@@ -726,6 +756,101 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
             ),
         ],
       ),
+    );
+  }
+}
+
+
+// --- WIDGET: ExpandableText ---
+class ExpandableText extends StatefulWidget {
+  final String text;
+  final int trimLines;
+
+  const ExpandableText({super.key, required this.text, this.trimLines = 2});
+
+  @override
+  State<ExpandableText> createState() => _ExpandableTextState();
+}
+
+class _ExpandableTextState extends State<ExpandableText> {
+  bool _isExpanded = false;
+
+  static const Color _secondaryColor = Color(0xFF6B6B6B);
+  static const Color _googleBlue = Color(0xFF4285F4);
+
+  @override
+  Widget build(BuildContext context) {
+    final textWidget = Text(
+      widget.text,
+      maxLines: _isExpanded ? null : widget.trimLines,
+      overflow: TextOverflow.fade, 
+      style: const TextStyle(
+        color: _secondaryColor,
+        height: 1.6,
+        fontSize: 14,
+        fontFamily: 'DMSans',
+      ),
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final textPainter = TextPainter(
+          text: TextSpan(text: widget.text, style: textWidget.style),
+          maxLines: widget.trimLines,
+          textDirection: Directionality.of(context),
+        )..layout(maxWidth: constraints.maxWidth);
+
+        if (!textPainter.didExceedMaxLines) {
+          return textWidget;
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            textWidget,
+            if (!_isExpanded)
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isExpanded = true;
+                  });
+                },
+                child: const Padding(
+                  padding: EdgeInsets.only(top: 4.0),
+                  child: Text(
+                    'Lihat Selengkapnya',
+                    style: TextStyle(
+                      color: _googleBlue,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      fontFamily: 'DMSans',
+                    ),
+                  ),
+                ),
+              ),
+            if (_isExpanded)
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isExpanded = false;
+                  });
+                },
+                child: const Padding(
+                  padding: EdgeInsets.only(top: 4.0),
+                  child: Text(
+                    'Sembunyikan',
+                    style: TextStyle(
+                      color: _googleBlue,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      fontFamily: 'DMSans',
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

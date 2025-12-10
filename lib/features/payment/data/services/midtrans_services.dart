@@ -1,19 +1,17 @@
-// data/services/midtrans_services.dart
-import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart'; // <<< Tambahkan ini
-
-// Model-model Midtrans response yang berulang dihilangkan, 
-// dan dipanggil dari file model yang seharusnya.
-// Model MidtransResponseModel di sini dihapus / dipindahkan.
+// features/payment/data/services/midtrans_services.dart
+import 'package:dio/src/dio.dart';
+import 'package:url_launcher/url_launcher.dart'; 
 
 class MidtransService {
+  MidtransService(Dio dio);
 
-  // Fungsi utilitas untuk membuka URL pembayaran Snap
+  // Fungsi utilitas untuk membuka URL pembayaran Snap di browser
   static Future<void> startPayment(String snapUrl) async {
     final uri = Uri.parse(snapUrl);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      // Lebih baik throw Exception agar bisa ditangkap di Provider/Screen
-      throw Exception('Could not launch Midtrans Snap URL: $snapUrl');
+    
+    // Gunakan mode externalApplication untuk membuka di browser penuh
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) { 
+      throw Exception('Gagal membuka halaman Midtrans Snap: $snapUrl');
     }
   }
 }

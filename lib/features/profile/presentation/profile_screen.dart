@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../home/presentation/home_screen.dart'; // Tetap dipertahankan
+import 'package:learn_flutter_intermediate/features/profile/presentation/about_screen.dart';
+import 'package:learn_flutter_intermediate/features/profile/presentation/edit_profile_screen.dart';
+import 'package:learn_flutter_intermediate/features/profile/presentation/support_screen.dart';
 import '../../auth/providers/auth_providers.dart';
-import '../../auth/presentation/login_screen.dart'; // Diperlukan untuk Logout
+import '../../auth/presentation/login_screen.dart'; 
+
+// Import halaman dummy baru:
+import 'account_info_screen.dart'; 
+import 'settings_screen.dart'; 
+import 'activity_screen.dart'; 
 
 // --- KONSTANTA GAYA MODERN (GOOOGLE/MATERIAL 3) ---
-const Color _googleBlue = Color(0xFF4285F4); // Biru Google
-const Color _secondaryColor = Color(0xFF6B6B6B); // Abu-abu gelap untuk ikon/teks tidak aktif
+const Color _googleBlue = Color(0xFF4285F4); 
+const Color _secondaryColor = Color(0xFF6B6B6B); 
 const double _modernRadius = 16.0; 
-const Color _backgroundColor = Color(0xFFFAFAFA); // Background yang lebih terang
+const Color _backgroundColor = Color(0xFFFAFAFA); 
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -20,13 +27,13 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: _backgroundColor,
       appBar: AppBar(
-        automaticallyImplyLeading: true, // Biarkan tombol back default berfungsi untuk navigasi ke Home
+        automaticallyImplyLeading: true,
         title: const Text(
           'Profile', 
           style: TextStyle(
             fontFamily: 'DMSans', 
             fontWeight: FontWeight.bold,
-            color: Colors.black87, // Warna teks AppBar
+            color: Colors.black87,
           )
         ),
         elevation: 0,
@@ -34,11 +41,8 @@ class ProfileScreen extends ConsumerWidget {
         titleSpacing: 24.0,
       ),
       body: FutureBuilder(
-        // Catatan: Jika Anda menggunakan Riverpod state, sebaiknya gunakan ref.watch/read pada StateNotifierProvider
-        // daripada memanggil metode Future langsung di sini.
         future: authRepo.getUser(),
         builder: (context, snapshot) {
-          // Tangani loading state
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator(color: _googleBlue));
           }
@@ -50,10 +54,11 @@ class ProfileScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildProfileHeader(
-                  user?.name ?? 'Pengguna',
-                  user?.email ?? 'pengguna@example.com',
+                  user?.name ?? 'John Doe',
+                  user?.email ?? 'F2L9H@example.com',
+                  context,
                 ),
-                const SizedBox(height: 32), // Jarak yang lebih besar
+                const SizedBox(height: 32), 
 
                 _buildSectionHeader('Akun & Pengaturan'),
                 const SizedBox(height: 12),
@@ -71,12 +76,14 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfileHeader(String name, String email) {
+  // --- Implementasi Widget lainnya (Header, SectionHeader, Divider) ---
+  
+  Widget _buildProfileHeader(String name, String email, BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24), // Padding yang lebih besar
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: _googleBlue, // Menggunakan Google Blue
-        borderRadius: BorderRadius.circular(_modernRadius), // Sudut membulat modern
+        color: _googleBlue,
+        borderRadius: BorderRadius.circular(_modernRadius),
         boxShadow: [
           BoxShadow(
             color: _googleBlue.withOpacity(0.3),
@@ -88,8 +95,7 @@ class ProfileScreen extends ConsumerWidget {
       child: Row(
         children: [
           const CircleAvatar(
-            radius: 30, // Avatar yang lebih besar
-            // Anda mungkin perlu mengganti ini dengan NetworkImage jika menggunakan URL dari user
+            radius: 30, 
             backgroundColor: Colors.white,
             child: Icon(Icons.person, size: 30, color: _googleBlue),
           ),
@@ -102,8 +108,8 @@ class ProfileScreen extends ConsumerWidget {
                   name,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 22, // Font lebih besar
-                    fontWeight: FontWeight.w700, // Lebih tebal
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
                     fontFamily: 'DMSans',
                   ),
                 ),
@@ -120,9 +126,12 @@ class ProfileScreen extends ConsumerWidget {
           ),
           IconButton(
             onPressed: () {
-              // TODO: Navigasi ke halaman Edit Profile
+              Navigator.push(
+                context, 
+                MaterialPageRoute(builder: (context) => const EditProfileScreen())
+              );
             },
-            icon: const Icon(Icons.edit_outlined, color: Colors.white), // Ikon outlined
+            icon: const Icon(Icons.edit_outlined, color: Colors.white), 
           ),
         ],
       ),
@@ -133,7 +142,7 @@ class ProfileScreen extends ConsumerWidget {
     return Text(
       title,
       style: const TextStyle(
-        fontSize: 16, // Ukuran Header Seksi yang lebih halus
+        fontSize: 16, 
         fontWeight: FontWeight.bold,
         fontFamily: 'DMSans',
         color: _secondaryColor,
@@ -142,11 +151,9 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Widget _buildAccountSection(BuildContext context, WidgetRef ref) {
-    // Fungsi logout yang sebenarnya
     void handleLogout() async {
       final authNotifier = ref.read(authNotifierProvider.notifier);
       await authNotifier.logout();
-      // Navigasi ke LoginScreen setelah logout
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const LoginScreen()),
         (Route<dynamic> route) => false,
@@ -173,27 +180,31 @@ class ProfileScreen extends ConsumerWidget {
             title: 'Informasi Akun',
             subtitle: 'Detail info akun Anda',
             onTap: () {
-              // TODO: Navigasi ke Account Info
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const AccountInfoScreen()));
             },
-            isFirst: true, // Tambahkan ini untuk menghilangkan divider di item pertama
+            isFirst: true,
           ),
           _buildDivider(),
           _buildMenuItem(
             icon: Icons.settings_outlined,
             title: 'Pengaturan & Preferensi',
             subtitle: 'Atur preferensi Anda',
-            onTap: () {},
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+            },
           ),
           _buildDivider(),
           _buildMenuItem(
-            icon: Icons.history_toggle_off_outlined, // Ikon outlined yang lebih modern
+            icon: Icons.history_toggle_off_outlined,
             title: 'Aktivitas Pengguna',
             subtitle: 'Lihat riwayat aktivitas Anda',
-            onTap: () {},
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const ActivityScreen()));
+            },
           ),
           _buildDivider(),
           _buildMenuItem(
-            icon: Icons.security_outlined, // Ikon keamanan
+            icon: Icons.security_outlined, 
             title: 'Two-Factor Authentication',
             subtitle: 'Further secure your account for safety',
             onTap: () {},
@@ -203,9 +214,9 @@ class ProfileScreen extends ConsumerWidget {
             icon: Icons.logout_rounded,
             title: 'Keluar (Log out)',
             subtitle: 'Sign out from your account',
-            color: Colors.red.shade600, // Warna merah untuk logout
-            onTap: handleLogout, // Gunakan fungsi logout
-            isLast: true, // Tambahkan ini untuk menghilangkan divider di item terakhir
+            color: Colors.red.shade600,
+            onTap: handleLogout,
+            isLast: true,
           ),
         ],
       ),
@@ -229,16 +240,20 @@ class ProfileScreen extends ConsumerWidget {
       child: Column(
         children: [
           _buildMenuItem(
-            icon: Icons.support_agent_outlined, // Ikon yang lebih spesifik
+            icon: Icons.support_agent_outlined,
             title: 'Bantuan & Dukungan',
-            onTap: () {},
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SupportScreen()));
+            },
             isFirst: true,
           ),
           _buildDivider(),
           _buildMenuItem(
             icon: Icons.info_outline,
             title: 'Tentang Aplikasi',
-            onTap: () {},
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutScreen()));
+            },
             isLast: true,
           ),
         ],
@@ -255,8 +270,8 @@ class ProfileScreen extends ConsumerWidget {
     bool isFirst = false,
     bool isLast = false,
   }) {
-    // Menggunakan InkWell/GestureDetector di sekitar ListTile untuk kontrol radius yang lebih baik
-    return ClipRRect(
+    // ... (Implementasi _buildMenuItem tetap sama)
+     return ClipRRect(
       borderRadius: BorderRadius.vertical(
         top: isFirst ? Radius.circular(_modernRadius) : Radius.zero,
         bottom: isLast ? Radius.circular(_modernRadius) : Radius.zero,
@@ -275,7 +290,7 @@ class ProfileScreen extends ConsumerWidget {
             title: Text(
               title,
               style: TextStyle(
-                fontWeight: FontWeight.w600, // Bold sedang
+                fontWeight: FontWeight.w600, 
                 fontFamily: 'DMSans',
                 color: color ?? Colors.black87,
               ),
@@ -290,7 +305,7 @@ class ProfileScreen extends ConsumerWidget {
                   )
                 : null,
             trailing: color == Colors.red.shade600
-                ? null // Hilangkan panah untuk tombol logout
+                ? null 
                 : const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey),
           ),
         ),
@@ -298,7 +313,6 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
   
-  // Widget Divider Kustom
   Widget _buildDivider() {
     return Padding(
       padding: const EdgeInsets.only(left: 20.0, right: 20.0),
@@ -306,6 +320,3 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 }
-
-// Catatan: Pastikan Anda memiliki LoginScreen di path '../../auth/presentation/login_screen.dart'
-// dan Anda telah mengganti `const ProfileScreen()` dengan `const LoginScreen()` setelah logout.

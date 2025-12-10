@@ -1,4 +1,4 @@
-// data/models/midtrans_status_model.dart
+// features/payment/data/models/midtrans_status_model.dart
 class MidtransStatusModel {
   final String transactionId;
   final String orderId;

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:learn_flutter_intermediate/features/bookings/presentation/booking_screen.dart';
+import 'package:learn_flutter_intermediate/features/favorite/presentation/favorite_screen.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../../profile/presentation/profile_screen.dart';
 import 'hotel_detail_screen.dart';
@@ -92,16 +94,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // if (index == 0) {
     //   // Sudah di Home, tidak perlu navigasi
     //   return;
-    // if (index == 1) {
-    //   Navigator.push(
-    //     context,
-    //     MaterialPageRoute(builder: (context) => const ReservationSuccessScreen(reservation: 1,)),
-    //   );
-    // }
+    if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const BookingsScreen()),
+      );
+    }
     if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const NotificationScreen()),
+        MaterialPageRoute(builder: (context) => const FavoritesScreen()),
       );
     }
     if (index == 3) {

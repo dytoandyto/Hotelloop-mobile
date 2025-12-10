@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:learn_flutter_intermediate/features/booking_form/data/models/reservation_model.dart';
 import 'package:learn_flutter_intermediate/features/home/data/models/hotel_model.dart';
+// PASTIKAN midtrans_services.dart sudah berisi implementasi url_launcher
 import 'package:learn_flutter_intermediate/features/payment/data/services/midtrans_services.dart';
 import 'package:learn_flutter_intermediate/features/room_types/data/models/room_type_model.dart';
 import 'package:learn_flutter_intermediate/features/payment/provider/payment_provider.dart';
@@ -44,18 +45,13 @@ class _PaymentSummaryScreenState extends ConsumerState<PaymentSummaryScreen> {
     if (currentReservation.paymentStatus.toLowerCase() == 'pending') {
       Future.delayed(const Duration(seconds: 1), () {
         // Cek apakah data VA/TransId sudah ada dari BE (setelah submit)
-        if (currentReservation.midtransTransactionId != null ||
-            currentReservation.midtransVaNumber != null) {
-          _verifyPayment();
-        }
+        _verifyPayment();
       });
     }
   }
 
-  String? get midtransVaNumber => currentReservation.midtransVaNumber;
-
   // --- LOGIKA HARGA ---
-  final double taxRate = 0.1;
+  final double taxRate = 0;
 
   double get _reservationSubtotal {
     return currentReservation.totalPrice / (1 + taxRate);
@@ -105,46 +101,6 @@ class _PaymentSummaryScreenState extends ConsumerState<PaymentSummaryScreen> {
       decimalDigits: 0,
     );
     final paymentState = ref.watch(paymentNotifierProvider);
-
-    // --- LISTENER RIVERPOD ---
-    ref.listen<PaymentState>(paymentNotifierProvider, (previous, next) {
-      if (next.verifiedReservation != null &&
-          next.verifiedReservation!.id == currentReservation.id) {
-        // Hanya update jika ada perubahan status atau data VA
-        if (next.verifiedReservation!.paymentStatus !=
-                currentReservation.paymentStatus ||
-            next.verifiedReservation!.midtransVaNumber !=
-                currentReservation.midtransVaNumber) {
-          setState(() {
-            currentReservation = next.verifiedReservation!;
-          });
-
-          if (currentReservation.paymentStatus.toLowerCase() == 'settlement' ||
-              currentReservation.paymentStatus.toLowerCase() == 'paid' ||
-              currentReservation.paymentStatus.toLowerCase() == 'success') {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Status Pembayaran Berhasil!'),
-                backgroundColor: Colors.green,
-              ),
-            );
-            // Opsional: Redirect ke halaman E-Voucher/Konfirmasi
-          } else if (currentReservation.midtransVaNumber != null &&
-              previous?.verifiedReservation?.midtransVaNumber == null) {
-            // Notifikasi VA baru tersedia
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Nomor VA sudah tersedia: ${currentReservation.midtransVaNumber}',
-                ),
-              ),
-            );
-          }
-        }
-        ref.read(paymentNotifierProvider.notifier).resetVerificationState();
-      }
-    });
-    // --- AKHIR LISTENER RIVERPOD ---
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
@@ -219,25 +175,19 @@ class _PaymentSummaryScreenState extends ConsumerState<PaymentSummaryScreen> {
             _buildPriceDetailCard(formatter),
 
             // Tombol Cek Status Manual
-            if (currentReservation.midtransTransactionId != null &&
-                currentReservation.paymentStatus.toLowerCase() == 'pending' &&
-                !paymentState.isVerifying)
-              Padding(
-                padding: const EdgeInsets.only(top: 16.0),
-                child: Center(
-                  child: TextButton.icon(
-                    onPressed: _verifyPayment,
-                    icon: const Icon(Icons.refresh, color: _primaryBlue),
-                    label: const Text(
-                      'Cek Status Pembayaran Manual',
-                      style: TextStyle(
-                        color: _primaryBlue,
-                        fontFamily: 'DMSans',
-                      ),
-                    ),
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: Center(
+                child: TextButton.icon(
+                  onPressed: _verifyPayment,
+                  icon: const Icon(Icons.refresh, color: _primaryBlue),
+                  label: const Text(
+                    'Cek Status Pembayaran Manual',
+                    style: TextStyle(color: _primaryBlue, fontFamily: 'DMSans'),
                   ),
                 ),
               ),
+            ),
           ],
         ),
       ),
@@ -427,20 +377,6 @@ class _PaymentSummaryScreenState extends ConsumerState<PaymentSummaryScreen> {
             Icons.vpn_key_outlined,
             isCode: true,
           ),
-
-          // Tampilkan VA Number hanya jika pending dan tersedia
-          if (midtransVaNumber != null &&
-              currentReservation.paymentStatus.toLowerCase() == 'pending')
-            const Divider(height: 24),
-          if (midtransVaNumber != null &&
-              currentReservation.paymentStatus.toLowerCase() == 'pending')
-            _buildScheduleRow(
-              'Virtual Account',
-              midtransVaNumber!,
-              Icons.account_balance_wallet_outlined,
-              isCode: true,
-              highlight: true,
-            ),
         ],
       ),
     );
@@ -651,21 +587,6 @@ class _PaymentSummaryScreenState extends ConsumerState<PaymentSummaryScreen> {
       // Jika sudah terbayar
       buttonText = 'Pembayaran Berhasil';
       onPressed = () => Navigator.popUntil(context, (route) => route.isFirst);
-    } else if (currentReservation.midtransTransactionId != null && isPending) {
-      // Jika transaksi sudah dibuat (ada ID)
-      // FIX: Jika transaksi ID ada, selalu panggil Snap UI lagi untuk melihat instruksi terbaru
-      buttonText = isVerifying
-          ? 'Memeriksa Status...'
-          : (midtransVaNumber != null
-                ? 'Lanjut ke Pembayaran'
-                : 'Bayar Ulang / Lanjut');
-      onPressed = isVerifying
-          ? null
-          : () {
-              // Selalu panggil trigger untuk membuka Snap UI / halaman detail
-              _triggerGenerateAndPay(ref, paymentState);
-            };
-      showLoading = isVerifying;
     } else if (isPending) {
       // Jika belum terbayar dan belum ada token (buat token pertama kali)
       buttonText = isGeneratingToken ? 'Membuat Token...' : 'Bayar Sekarang';
@@ -699,19 +620,149 @@ class _PaymentSummaryScreenState extends ConsumerState<PaymentSummaryScreen> {
       ),
       child: SafeArea(
         top: false,
-        child: ElevatedButton(
-          onPressed: onPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isSettlementOrPaid
-                ? Colors.green.shade600
-                : (isPending ? _primaryBlue : Colors.grey.shade400),
-            minimumSize: const Size(double.infinity, 56),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // 1. Display Total Price (di atas tombol)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Total Bayar:',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: _secondaryColor,
+                    fontFamily: 'DMSans',
+                  ),
+                ),
+                Text(
+                  formatter.format(currentReservation.totalPrice),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: _primaryBlue,
+                    fontFamily: 'DMSans',
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // 2. Tombol Aksi
+            if (isSettlementOrPaid)
+              _buildPaidButton(context)
+            else if (isPending)
+              _buildPendingOptions(
+                context,
+                ref,
+                paymentState,
+              ) // <-- Tampilkan 2 Tombol
+            else
+              // Status Lain (Expired/Cancel)
+              _buildStatusText(currentReservation.paymentStatus.toUpperCase()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- HELPER UNTUK MEMANGGIL GENERATE TOKEN DAN PEMBAYARAN ---
+  // MODIFIKASI: Menerima snapUrl dari provider dan membukanya
+  Future<void> _triggerGenerateAndPay(
+    WidgetRef ref,
+    PaymentState paymentState,
+  ) async {
+    final notifier = ref.read(paymentNotifierProvider.notifier);
+
+    // 1. Panggil Notifier untuk mendapatkan Snap URL
+    // Asumsi notifier.generateSnapToken mengembalikan String snapUrl
+    final snapUrl = await notifier.generateSnapToken(
+      reservationId: currentReservation.id,
+      amount: currentReservation.totalPrice,
+      customerEmail: currentReservation.guestEmail,
+      customerName: currentReservation.guestName,
+    );
+
+    // 2. Jika sukses dan tidak ada error, buka Snap URL
+    if (snapUrl != null &&
+        !paymentState.isLoading &&
+        paymentState.error == null) {
+      try {
+        // Panggil MidtransService untuk membuka browser/external app
+        await MidtransService.startPayment(snapUrl);
+
+        // Opsional: Tampilkan pesan notifikasi setelah memicu pembukaan browser
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Mengarahkan ke halaman pembayaran Midtrans...'),
+            backgroundColor: _primaryBlue,
+          ),
+        );
+      } catch (e) {
+        // Error handling jika gagal membuka browser
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal membuka halaman Snap: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+}
+
+// --- HELPER UNTUK STATUS PENDING (BAYAR SEKARANG & BAYAR NANTI) ---
+Widget _buildPendingOptions(
+  BuildContext context,
+  WidgetRef ref,
+  PaymentState paymentState,
+) {
+  final isGeneratingToken = paymentState.isLoading;
+
+  return Row(
+    children: [
+      // TOMBOL 1: BAYAR NANTI (Pay Later / Lanjut ke Riwayat)
+      Expanded(
+        child: OutlinedButton(
+          onPressed: isGeneratingToken
+              ? null
+              : () => Navigator.pop(context), // Cukup kembali ke Home/Riwayat
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(0, 56),
+            side: const BorderSide(color: _primaryBlue, width: 2),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(_mediumRadius),
             ),
-            elevation: (isPending && onPressed != null) ? 5 : 0,
           ),
-          child: showLoading
+          child: const Text(
+            'Bayar Nanti',
+            style: TextStyle(
+              color: _primaryBlue,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'DMSans',
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(width: 12),
+
+      // TOMBOL 2: BAYAR SEKARANG (Midtrans Snap)
+      Expanded(
+        child: ElevatedButton(
+          onPressed: isGeneratingToken
+              ? null
+              : () async {
+                  // _triggerGenerateAndPay(ref, paymentState);
+                },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: _primaryBlue,
+            minimumSize: const Size(0, 56),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(_mediumRadius),
+            ),
+          ),
+          child: isGeneratingToken
               ? const SizedBox(
                   height: 20,
                   width: 20,
@@ -720,9 +771,9 @@ class _PaymentSummaryScreenState extends ConsumerState<PaymentSummaryScreen> {
                     strokeWidth: 2,
                   ),
                 )
-              : Text(
-                  buttonText,
-                  style: const TextStyle(
+              : const Text(
+                  'Bayar Sekarang',
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -731,21 +782,45 @@ class _PaymentSummaryScreenState extends ConsumerState<PaymentSummaryScreen> {
                 ),
         ),
       ),
-    );
-  }
+    ],
+  );
+}
 
-  // --- HELPER UNTUK MEMANGGIL GENERATE TOKEN DAN PEMBAYARAN ---
-  Future<void> _triggerGenerateAndPay(
-    WidgetRef ref,
-    PaymentState paymentState,
-  ) async {
-    final notifier = ref.read(paymentNotifierProvider.notifier);
+// --- HELPER TOMBOL STATUS FINAL ---
+Widget _buildPaidButton(BuildContext context) {
+  return ElevatedButton.icon(
+    onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
+    icon: const Icon(Icons.check_circle_outline, color: Colors.white),
+    label: const Text(
+      'Pembayaran Berhasil',
+      style: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
+        fontFamily: 'DMSans',
+      ),
+    ),
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.green.shade600,
+      minimumSize: const Size(double.infinity, 56),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(_mediumRadius),
+      ),
+    ),
+  );
+}
 
-    final snaptoken = await notifier.generateSnapToken(
-      reservationId: currentReservation.id,
-      amount: currentReservation.totalPrice,
-      customerEmail: currentReservation.guestEmail,
-      customerName: currentReservation.guestName,
-    );
-  }
+Widget _buildStatusText(String status) {
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: Colors.grey.shade100,
+      borderRadius: BorderRadius.circular(_mediumRadius),
+    ),
+    child: Text(
+      'Status: $status',
+      style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+    ),
+  );
 }

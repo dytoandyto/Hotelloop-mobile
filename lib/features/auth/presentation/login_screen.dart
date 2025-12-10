@@ -11,10 +11,10 @@ const Color _secondaryTextColor = Color(0xFF6B6B6B);
 const Color _inputFillColor = Color(0xFFF5F5F5);
 const double _largeRadius = 12.0;
 // --- KONSTANTA SPASI LEBIH KECIL ---
-const double _smallSpacing = 16.0; 
-const double _buttonPadding = 14.0; 
+const double _smallSpacing = 16.0;
+const double _buttonPadding = 14.0;
 
-// Karena widget ini dipanggil di PageView (AuthScreen), 
+// Karena widget ini dipanggil di PageView (AuthScreen),
 // kita tidak perlu Scaffold, hanya SingleChildScrollView yang berisi form.
 // Nama class diubah menjadi LoginScreen agar cocok dengan import AuthScreen
 
@@ -30,7 +30,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
-  bool _isRememberMe = false;
+  late bool _isRememberMe;
+
+  @override
+  void initState() {
+    super.initState();
+    // Inisialisasi state _isRememberMe dari AuthState yang sudah dimuat saat startup
+    _isRememberMe = ref.read(authNotifierProvider).isRemembered;
+
+    // Opsional: Jika Anda ingin mengisi field email otomatis saat Remember Me aktif
+    // (Membutuhkan perubahan pada AuthState untuk menyimpan email, tapi kita skip dulu)
+  }
 
   @override
   void dispose() {
@@ -40,13 +50,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   // Logika navigasi setelah login berhasil
-  void _handleAuthListener(BuildContext context, AuthState? previous, AuthState next) {
+  void _handleAuthListener(
+    BuildContext context,
+    AuthState? previous,
+    AuthState next,
+  ) {
     if (next.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(next.error!),
-          backgroundColor: Colors.redAccent,
-        ),
+        SnackBar(content: Text(next.error!), backgroundColor: Colors.redAccent),
       );
     }
     if (next.user != null) {
@@ -61,10 +72,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   // Logika saat tombol Login ditekan
   void _onLoginPressed() {
     if (_formKey.currentState!.validate()) {
-      ref.read(authNotifierProvider.notifier).login(
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
-      );
+      ref
+          .read(authNotifierProvider.notifier)
+          .login(
+            _emailController.text.trim(),
+            _passwordController.text.trim(),
+            _isRememberMe, // <-- Kirim status Remember Me
+          );
     }
   }
 
@@ -72,22 +86,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
 
-    // Listener untuk navigasi dan pesan error
-    // Menggunakan ref.listen di dalam build hanya jika widget ini tidak di-rebuild
-    // atau jika Anda ingin memastikan listener di-setup setiap saat.
-    ref.listen(authNotifierProvider, (previous, next) => _handleAuthListener(context, previous, next));
+    ref.listen(
+      authNotifierProvider,
+      (previous, next) => _handleAuthListener(context, previous, next),
+    );
 
     return SingleChildScrollView(
-      // Padding dihilangkan karena AuthScreen sudah memberikan padding di sekitarnya
-      // atau biarkan padding 24.0 untuk konsistensi form.
-      padding: const EdgeInsets.symmetric(horizontal: 24.0), 
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            
-            // --- Input Email ---
+            // --- Input Email --- (Kode Input Email tetap sama)
             _buildLabel('Email Address'),
             const SizedBox(height: 8),
             _buildTextField(
@@ -95,12 +106,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               hintText: 'user@example.com',
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
-              validator: (value) =>
-                  value == null || value.isEmpty ? 'Please enter your email' : null,
+              validator: (value) => value == null || value.isEmpty
+                  ? 'Please enter your email'
+                  : null,
             ),
             const SizedBox(height: _smallSpacing),
 
-            // --- Input Password ---
+            // --- Input Password --- (Kode Input Password tetap sama)
             _buildLabel('Password'),
             const SizedBox(height: 8),
             _buildTextField(
@@ -119,11 +131,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   });
                 },
               ),
-              validator: (value) => value == null || value.isEmpty ? 'Please enter your password' : null,
+              validator: (value) => value == null || value.isEmpty
+                  ? 'Please enter your password'
+                  : null,
             ),
             const SizedBox(height: 10),
 
-            // --- Checkbox dan Forgot Password ---
+            // --- Checkbox dan Forgot Password (MODIFIKASI) ---
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -138,11 +152,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         });
                       },
                       activeColor: _googleBlue,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                     const Text(
-                      'Remember me', 
-                      style: TextStyle(color: _secondaryTextColor, fontFamily: 'DMSans', fontSize: 14)
+                      'Remember me',
+                      style: TextStyle(
+                        color: _secondaryTextColor,
+                        fontFamily: 'DMSans',
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
@@ -152,24 +172,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const ForgotPasswordScreen()
+                        builder: (_) => const ForgotPasswordScreen(),
                       ),
                     );
                   },
                   child: const Text(
-                    'Forgot Password?', 
-                    style: TextStyle(color: _googleBlue, fontWeight: FontWeight.w600, fontFamily: 'DMSans', fontSize: 14)
+                    'Forgot Password?',
+                    style: TextStyle(
+                      color: _googleBlue,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'DMSans',
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: _smallSpacing + 10),
 
-            // --- Tombol Login Utama ---
+            // --- Tombol Login Utama --- (Kode tombol tetap sama)
             ElevatedButton(
               onPressed: authState.isLoading ? null : _onLoginPressed,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[700],
+                backgroundColor: _googleBlue,
                 padding: const EdgeInsets.symmetric(vertical: _buttonPadding),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(_largeRadius),
@@ -181,16 +206,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2.5,
+                      ),
                     )
                   : const Text(
-                      'Log In', 
+                      'Log In',
                       style: TextStyle(
-                        color: Colors.white, 
-                        fontSize: 16, 
+                        color: Colors.white,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        fontFamily: 'DMSans'
-                      )
+                        fontFamily: 'DMSans',
+                      ),
                     ),
             ),
             const SizedBox(height: _smallSpacing),
@@ -198,12 +226,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             // --- Divider 'Or' ---
             Row(
               children: [
-                const Expanded(child: Divider(color: Color(0xFFE0E0E0), thickness: 1.5)),
+                const Expanded(
+                  child: Divider(color: Color(0xFFE0E0E0), thickness: 1.5),
+                ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Text('OR', style: TextStyle(color: _secondaryTextColor, fontSize: 14, fontFamily: 'DMSans')),
+                  child: Text(
+                    'OR',
+                    style: TextStyle(
+                      color: _secondaryTextColor,
+                      fontSize: 14,
+                      fontFamily: 'DMSans',
+                    ),
+                  ),
                 ),
-                const Expanded(child: Divider(color: Color(0xFFE0E0E0), thickness: 1.5)),
+                const Expanded(
+                  child: Divider(color: Color(0xFFE0E0E0), thickness: 1.5),
+                ),
               ],
             ),
             const SizedBox(height: _smallSpacing),
@@ -215,8 +254,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               },
               icon: Image.asset('assets/images/google_logo.png', height: 20),
               label: const Text(
-                'Continue with Google', 
-                style: TextStyle(color: _primaryTextColor, fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'DMSans')
+                'Continue with Google',
+                style: TextStyle(
+                  color: _primaryTextColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'DMSans',
+                ),
               ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(0xFFE0E0E0), width: 1.5),
@@ -239,10 +283,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Text(
       text,
       style: const TextStyle(
-        fontWeight: FontWeight.w700, 
-        fontSize: 14, 
+        fontWeight: FontWeight.w700,
+        fontSize: 14,
         color: _primaryTextColor,
-        fontFamily: 'DMSans'
+        fontFamily: 'DMSans',
       ),
     );
   }
@@ -260,10 +304,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
-      style: const TextStyle(color: _primaryTextColor, fontFamily: 'DMSans', fontSize: 15),
+      style: const TextStyle(
+        color: _primaryTextColor,
+        fontFamily: 'DMSans',
+        fontSize: 15,
+      ),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(color: _secondaryTextColor, fontFamily: 'DMSans'),
+        hintStyle: const TextStyle(
+          color: _secondaryTextColor,
+          fontFamily: 'DMSans',
+        ),
         prefixIcon: Icon(icon, color: _secondaryTextColor),
         suffixIcon: suffixIcon,
         border: OutlineInputBorder(
@@ -280,7 +331,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
         fillColor: _inputFillColor,
         filled: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
       validator: validator,
     );

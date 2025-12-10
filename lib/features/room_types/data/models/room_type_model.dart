@@ -1,4 +1,5 @@
-import 'package:intl/intl.dart';
+// lib/features/room_types/data/models/room_type_model.dart
+import 'package:intl/intl.dart'; 
 import 'bed_model.dart'; // Import BedModel
 import 'price_model.dart'; // Import PriceModel
 
@@ -22,13 +23,11 @@ class RoomTypeModel {
     required this.facilities,
     required this.beds,
     required this.price,
-
-
   });
 
   factory RoomTypeModel.fromJson(Map<String, dynamic> json) {
     // PASTIkan URL Ngrok ini adalah yang sedang aktif
-    const String mediaBaseUrl = 'https://9cbc6e946a52.ngrok-free.app/storage/'; 
+    const String mediaBaseUrl = 'https://5dfbf810413c.ngrok-free.app/storage/'; 
     
     // 1. Gambar
     String image = 'https://placehold.co/600x300/E0E0E0/grey?text=No+Room+Image';
@@ -47,6 +46,9 @@ class RoomTypeModel {
 
     // 3. Bed
     final List<BedModel> beds = (json['beds'] as List? ?? [])
+        // Asumsi BedModel memiliki factory fromJson
+        // Di sini kita TIDAK perlu memanggil toJson dari BedModel karena POST /room-types
+        // biasanya mengirimkan data harga dan bed type, bukan model lengkap.
         .map((b) => BedModel.fromJson(b as Map<String, dynamic>))
         .toList();
     
@@ -65,6 +67,17 @@ class RoomTypeModel {
       beds: beds,
       price: price,
     );
+  }
+  
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'description': description,
+      'capacity': capacity,
+      // Jika BE Anda mengharapkan list bed dan harga, Anda perlu menambahkan:
+      // 'beds': beds.map((b) => b.toJson()).toList(), 
+      // 'prices': [price.toJson()],
+    };
   }
   
   // Helper format harga IDR

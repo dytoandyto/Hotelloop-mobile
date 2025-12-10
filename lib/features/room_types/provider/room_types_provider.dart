@@ -1,3 +1,4 @@
+// lib/features/room_types/providers/room_types_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import '../../../core/dio/dio_provider.dart';
@@ -53,6 +54,21 @@ class RoomTypeService {
         return roomTypeData.map((json) => RoomTypeModel.fromJson(json as Map<String, dynamic>)).toList();
       } else {
         throw Exception('Gagal memuat tipe kamar: Status ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is DioException) {
+        throw Exception('Network Error: ${e.response?.statusCode ?? 'Connection Failed'}');
+      }
+      throw Exception('Kesalahan tak terduga saat fetch room types: $e');
+    }
+  }
+  Future postRoomType(RoomTypeModel roomType) async {
+    try {
+      final response = await dio.post('/room-types', data: roomType.toJson());
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return response.data;
+      } else {
+        throw Exception('Gagal membuat tipe kamar: Status ${response.statusCode}');
       }
     } catch (e) {
       if (e is DioException) {

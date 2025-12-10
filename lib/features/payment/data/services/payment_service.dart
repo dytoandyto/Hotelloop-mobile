@@ -2,14 +2,13 @@
 import 'package:dio/dio.dart';
 // import models yang sudah direvisi
 import 'package:learn_flutter_intermediate/features/payment/data/models/snap_token_model.dart';
-import 'package:learn_flutter_intermediate/features/payment/data/models/midtrans_status_model.dart'; // Asumsi Anda punya model ini
+import 'package:learn_flutter_intermediate/features/payment/data/models/midtrans_status_model.dart'; 
 
 class PaymentService {
   final Dio dio;
 
   PaymentService(this.dio);
 
-  // Mengganti PaymentResponse dengan SnapTokenModel
   Future<SnapTokenModel> createSnapTransaction({
     required int reservationId,
     required double amount,
@@ -18,7 +17,7 @@ class PaymentService {
   }) async {
     try {
       final response = await dio.post(
-        '/user/reservations/$reservationId/midtrans/token', // Endpoint BE Anda
+        '/user/reservations/$reservationId/midtrans/token', 
         data: {
           'amount': amount,
           'customer_name': customerName,
@@ -26,16 +25,23 @@ class PaymentService {
         },
       );
 
-      // Menggunakan SnapTokenModel
+      // --- Mencegah Parsing Error: Ambil Data Langsung ---
+      // Jika Dio sukses (status 2xx), coba parse.
       return SnapTokenModel.fromJson(response.data);
+      
+    } on DioException catch (e) {
+      // 1. Tangani Error Jaringan atau Status API 4xx/5xx
+      String errorMessage = e.response?.data['error'] ?? e.response?.data['message'] ?? e.message ?? 'Kesalahan API Midtrans.';
+      throw Exception(errorMessage);
+
     } catch (e) {
-      // Perluas error handling di sini jika ada DioException
-      throw Exception("Gagal membuat snap token: $e");
+      // 2. Tangani Error Parsing JSON (e.g., tipe data tidak cocok)
+      // Ini sering terjadi jika model tidak cocok dengan response BE.
+      throw Exception("Gagal memproses data Snap Token dari BE: $e");
     }
   }
   
-  // Fungsi Cek Status (dibiarkan seperti sebelumnya, asumsikan MidtransResponseModel
-  // diubah namanya menjadi MidtransStatusModel)
+  // Fungsi Cek Status (tetap sama)
   Future<MidtransStatusModel> checkStatus(String reservationId) async {
     // ... Implementasi call API cek status ke backend Anda
     

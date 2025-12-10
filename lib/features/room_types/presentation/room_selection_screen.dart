@@ -5,6 +5,7 @@ import '../provider/room_types_provider.dart'; // RoomType Provider
 import '../data/models/room_type_model.dart'; // RoomType Model
 import '../../booking_form/presentation/booking_form_screen.dart'; // BookingForm Screen
 import '../../home/providers/home_providers.dart';
+import '../data/models/bed_model.dart'; // WAJIB: Import BedModel agar bisa diakses
 
 // --- KONSTANTA GAYA ---
 const Color _googleBlue = Color(0xFF4285F4);
@@ -66,7 +67,7 @@ class RoomSelectionScreen extends ConsumerWidget {
                 child: Text('Gagal memuat tipe kamar: ${err.toString()}'),
               ),
               data: (roomTypes) {
-                // Ambil data HotelModel dari HomeState
+                // Ambil data HotelModel dari cache HomeState
                 final HotelModel? hotelData = getHotelDetail(homeState.hotels);
 
                 if (hotelData == null) {
@@ -209,16 +210,7 @@ class RoomSelectionScreen extends ConsumerWidget {
                       ElevatedButton(
                         onPressed: () {
                           // NAVIGASI DARI TOMBOL PILIH
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              // Meneruskan RoomType dan Hotel ke BookingForm
-                              builder: (context) => BookingFormScreen(
-                                roomType: roomType,
-                                hotell: hotel,
-                              ),
-                            ),
-                          );
+                          _showRoomDetailsBottomSheet(context, hotel, roomType);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _googleBlue,
@@ -231,7 +223,7 @@ class RoomSelectionScreen extends ConsumerWidget {
                           ),
                         ),
                         child: const Text(
-                          'Pilih',
+                          'Lihat Opsi', // FIX: Mengganti teks tombol menjadi 'Lihat Opsi'
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -353,134 +345,148 @@ class RoomSelectionScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 20),
 
-                      // Deskripsi
-                      const Text(
-                        'Deskripsi',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'DMSans',
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        roomType.description,
-                        style: const TextStyle(
-                          color: _secondaryColor,
-                          fontFamily: 'DMSans',
-                          height: 1.5,
-                        ),
-                      ),
-                      const Divider(height: 30),
+                      // Kontainer Opsi Tempat Tidur (Baru)
+                      _buildBedSelectionOptions(context, hotel, roomType), // Menggunakan widget baru
+                      
+                      const SizedBox(height: 20),
 
-                      // Fasilitas Kamar Lengkap
-                      const Text(
-                        'Fasilitas',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'DMSans',
+                        // Deskripsi
+                        const Text(
+                          'Deskripsi',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'DMSans',
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 16,
-                        runSpacing: 16,
-                        children: roomType.facilities
-                            .map((f) => _buildFacilityChip(f))
-                            .toList(),
-                      ),
-                      const Divider(height: 30),
+                        const SizedBox(height: 8),
+                        Text(
+                          roomType.description,
+                          style: const TextStyle(
+                            color: _secondaryColor,
+                            fontFamily: 'DMSans',
+                            height: 1.5,
+                          ),
+                        ),
+                        const Divider(height: 30),
 
-                      // Tipe Tempat Tidur
-                      const Text(
-                        'Tempat Tidur',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'DMSans',
+                        // Fasilitas Kamar Lengkap
+                        const Text(
+                          'Fasilitas',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'DMSans',
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: roomType.beds
-                            .map(
-                              (b) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.king_bed_outlined,
-                                      color: _googleBlue,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      '${b.quantity}x ${b.name}',
-                                      style: const TextStyle(
-                                        fontFamily: 'DMSans',
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                      const SizedBox(height: 40), // Ruang ekstra di bawah
-                    ],
-                  ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 16,
+                          runSpacing: 16,
+                          children: roomType.facilities
+                              .map((f) => _buildFacilityChip(f))
+                              .toList(),
+                        ),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
                 ),
               ),
 
               // Bottom Bar Fixed di Dalam BottomSheet
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border(top: BorderSide(color: Colors.grey.shade200)),
-                ),
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context); // Tutup detail sheet
-                    // Navigasi ke form booking (Isi Data Tamu)
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            BookingFormScreen(
-                              roomType: roomType,
-                              hotell: hotel,
-                            ),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _googleBlue,
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    'Pesan Kamar Ini (${roomType.formattedPrice} / malam)',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'DMSans',
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         );
       },
     );
   }
+
+  // --- WIDGET BARU: KARTU PILIHAN TEMPAT TIDUR ---
+  Widget _buildBedSelectionOptions(
+    BuildContext context,
+    HotelModel hotel,
+    RoomTypeModel roomType,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        const Text(
+          'Pilih Konfigurasi Tempat Tidur',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'DMSans',
+          ),
+        ),
+        const SizedBox(height: 12),
+        Column(
+          children: roomType.beds.map((bed) {
+            final bedConfig = '${bed.quantity} ${bed.name}';
+            
+            return Card(
+              margin: const EdgeInsets.only(bottom: 10),
+              elevation: 1,
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          bedConfig,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'DMSans',
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Kapasitas ${roomType.capacity} orang',
+                          style: const TextStyle(
+                            color: _secondaryColor,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Tutup detail sheet
+                        // NAVIGASI: Meneruskan RoomType (dan BedModel yang dipilih) ke BookingForm
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BookingFormScreen(
+                              roomType: roomType,
+                              hotel: hotel,
+                              selectedBed: bed, // BARU: Meneruskan BedModel yang dipilih
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _googleBlue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: const Text('Pesan', style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 10),
+      ],
+    );
+  }
+
 
   // Helper untuk membuat Chip Fasilitas
   Widget _buildFacilityChip(String name) {

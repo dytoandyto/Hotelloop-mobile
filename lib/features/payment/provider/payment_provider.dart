@@ -1,26 +1,29 @@
-// provider/payment_provider.dart
+// lib/features/payment/provider/payment_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:learn_flutter_intermediate/core/dio/dio_provider.dart';
 import 'package:learn_flutter_intermediate/features/booking_form/data/models/reservation_model.dart';
-import 'package:learn_flutter_intermediate/features/payment/data/services/payment_service.dart'; // Diperlukan untuk Dio/Service
 
-// Provider untuk PaymentService (Repository)
+import 'package:learn_flutter_intermediate/features/payment/data/services/payment_service.dart';
+
+// 1. PROVIDER SERVICE/REPOSITORY
+// Menggunakan PaymentService untuk call API BE
 final paymentServiceProvider = Provider((ref) {
   final dio = ref.watch(dioProvider);
   return PaymentService(dio);
 });
 
-// ... (Definisi PaymentState dan ReservationModel) ...
-
 // 2. STATE NOTIFIER
 class PaymentNotifier extends StateNotifier<PaymentState> {
-  // Inject PaymentService yang sesungguhnya
+  // Inject PaymentService
   final PaymentService _paymentService;
 
   PaymentNotifier(this._paymentService) : super(PaymentState());
 
-  // Menggunakan fungsi yang di-inject dari service
+  /// Fungsi untuk memanggil API Laravel dan mendapatkan Snap Token
+  /// Menggunakan parameter lengkap sesuai kebutuhan BE untuk Midtrans Snap.
   Future<String?> generateSnapToken({
+    // Asumsi: Kita menggunakan endpoint createUserSnapToken,
+    // sehingga membutuhkan data reservasi lengkap (kecuali hotelId)
     required int reservationId,
     required double amount,
     required String customerEmail,
@@ -29,7 +32,7 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      // Panggil service yang menggunakan Dio dan endpoint BE Anda
+      // Panggil PaymentService untuk mendapatkan Snap Token
       final snapTokenModel = await _paymentService.createSnapTransaction(
         reservationId: reservationId,
         amount: amount,
@@ -37,14 +40,10 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
         customerName: customerName,
       );
 
-      final String snapUrl = snapTokenModel.snapUrl;
-
-      if (snapUrl.isEmpty) {
-        throw Exception("Snap URL kosong dari backend.");
-      }
-
+      // Setelah berhasil, kembalikan snapToken
       state = state.copyWith(isLoading: false);
-      return snapUrl; // Mengembalikan URL untuk dibuka di screen
+      return snapTokenModel.snapToken;
+
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -62,16 +61,14 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
     state = state.copyWith(isVerifying: true, error: null);
 
     try {
-      // Panggil service untuk cek status (menggantikan mock HTTP client)
+      // Panggil PaymentService untuk mock cek status
       final statusModel = await _paymentService.checkStatus(
         reservationId.toString(),
       );
-
+      
+      // Update ReservationModel berdasarkan hasil status Midtrans
       final updatedReservation = oldReservation.copyWith(
-        paymentStatus: statusModel.transactionStatus,
-        // Anda mungkin perlu menyesuaikan bagaimana VA Number didapatkan
-        // dari MidtransStatusModel jika BE Anda mengembalikannya
-        midtransTransactionId: statusModel.transactionId,
+        paymentStatus: statusModel.transactionStatus, 
       );
 
       state = state.copyWith(
@@ -117,7 +114,7 @@ class PaymentState {
       isLoading: isLoading ?? this.isLoading,
       isVerifying: isVerifying ?? this.isVerifying,
       error: error,
-      verifiedReservation: verifiedReservation ?? this.verifiedReservation,
+      verifiedReservation: verifiedReservation,
     );
   }
 }

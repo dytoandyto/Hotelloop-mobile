@@ -1,3 +1,4 @@
+// lib/features/auth/data/models/auth_response.dart
 import 'user_model.dart';
 
 class AuthResponse {

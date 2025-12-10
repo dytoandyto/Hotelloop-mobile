@@ -1,3 +1,4 @@
+// lib/features/home/data/models/hotel_response.dart
 import 'hotel_model.dart';
 
 class HotelResponse {

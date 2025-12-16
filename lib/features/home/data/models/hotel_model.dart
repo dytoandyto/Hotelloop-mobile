@@ -2,7 +2,7 @@
 import 'package:intl/intl.dart';
 
 // URL Ngrok yang digunakan sebagai base media
-const String _mediaBaseUrl = 'https://5dfbf810413c.ngrok-free.app/storage/';
+const String _mediaBaseUrl = 'https://9eb2ea56402f.ngrok-free.app/storage/';
 
 class HotelModel {
   final int id;

@@ -91,32 +91,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   // --- Fungsi Navigasi Baru untuk Material 3 ---
   void _onNavBarTapped(int index) {
-    // if (index == 0) {
-    //   // Sudah di Home, tidak perlu navigasi
-    //   return;
+   if (index != 0) {
+    
+    Widget screen;
     if (index == 1) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const BookingsScreen()),
-      );
-    }
-    if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const FavoritesScreen()),
-      );
-    }
-    if (index == 3) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfileScreen()),
-      );
+      screen = const BookingsScreen();
+    } else if (index == 2) {
+      screen = const FavoritesScreen();
+    } else if (index == 3) {
+      screen = const ProfileScreen();
     } else {
-      setState(() {
-        _navBarCurrentIndex = index;
-      });
+      return;
     }
+
+    // PENTING: Lakukan push dan tunggu sampai halaman tersebut di-pop (ditutup)
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => screen),
+    ).then((_) {
+      // Setelah halaman ditutup (tekan tombol back), reset index ke Home
+      setState(() {
+        _navBarCurrentIndex = 0; // Kembalikan ke index Home
+      });
+    });
+
+  } else {
+    // Jika index adalah 0 (Home), kita set state ke 0
+    setState(() {
+      _navBarCurrentIndex = 0;
+    });
   }
+}
 
   // --- LOGIKA UTAMA: Cek apakah ada filter aktif ---
   bool get _isFilterActive {

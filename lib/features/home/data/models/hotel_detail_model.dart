@@ -28,7 +28,7 @@ class HotelDetailModel extends HotelModel {
     final HotelModel base = HotelModel.fromJson(hotel);
 
     // 2. Ambil list URL Gambar (Semua Gambar)
-    const String mediaBaseUrl = 'https://5dfbf810413c.ngrok-free.app/storage/'; 
+    const String mediaBaseUrl = 'https://9eb2ea56402f.ngrok-free.app/storage/'; 
     final List<dynamic> rawImages = hotel['images'] ?? [];
     
     final List<String> imageUrls = rawImages.map<String>((img) {

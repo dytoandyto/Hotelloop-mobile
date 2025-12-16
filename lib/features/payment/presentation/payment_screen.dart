@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:learn_flutter_intermediate/features/booking_form/data/models/reservation_model.dart';
+import 'package:learn_flutter_intermediate/features/bookings/presentation/booking_screen.dart';
 import 'package:learn_flutter_intermediate/features/home/data/models/hotel_model.dart';
+import 'package:learn_flutter_intermediate/features/home/presentation/home_screen.dart';
 // PASTIKAN midtrans_services.dart sudah berisi implementasi url_launcher
 import 'package:learn_flutter_intermediate/features/payment/data/services/midtrans_services.dart';
 import 'package:learn_flutter_intermediate/features/room_types/data/models/room_type_model.dart';
@@ -690,7 +692,7 @@ class _PaymentSummaryScreenState extends ConsumerState<PaymentSummaryScreen> {
         paymentState.error == null) {
       try {
         // Panggil MidtransService untuk membuka browser/external app
-        await MidtransService.startPayment(snapUrl);
+        // await MidtransService.startPayment(snapUrl);
 
         // Opsional: Tampilkan pesan notifikasi setelah memicu pembukaan browser
         ScaffoldMessenger.of(context).showSnackBar(
@@ -727,7 +729,12 @@ Widget _buildPendingOptions(
         child: OutlinedButton(
           onPressed: isGeneratingToken
               ? null
-              : () => Navigator.pop(context), // Cukup kembali ke Home/Riwayat
+              : () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const HomeScreen(),
+                  ),
+                ), // Cukup kembali ke Home/Riwayat
           style: OutlinedButton.styleFrom(
             minimumSize: const Size(0, 56),
             side: const BorderSide(color: _primaryBlue, width: 2),

@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "room_type_id": 1,
+    "date": "2025-08-05",
+    "available_quantity": 5
+  },
+  {
+    "id": 2,
+    "room_type_id": 1,
+    "date": "2025-08-06",
+    "available_quantity": 3
+  },
+  {
+    "id": 3,
+    "room_type_id": 2,
+    "date": "2025-08-05",
+    "available_quantity": 4
+  },
+  {
+    "id": 4,
+    "room_type_id": 2,
+    "date": "2025-08-06",
+    "available_quantity": 2
+  },
+  {
+    "id": 5,
+    "room_type_id": 3,
+    "date": "2025-08-05",
+    "available_quantity": 6
+  }
+]

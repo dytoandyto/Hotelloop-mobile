@@ -1,0 +1,23 @@
+[33mcommit 7c5b8483a52550c735576389550039189ffe3e12[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mandytoganteng[m[33m)[m
+Author: dytoandyto <otydna1307@gmail.com>
+Date:   Wed Dec 10 15:14:41 2025 +0700
+
+    work in proggres
+
+[33mcommit 5062909ea8e7433c6c067dfff36314d3fffbda30[m[33m ([m[1;31morigin/andytoganteng[m[33m)[m
+Author: dytoandyto <otydna1307@gmail.com>
+Date:   Wed Dec 10 09:30:11 2025 +0700
+
+    feat
+
+[33mcommit 9bb95d02de4437ec9fd002ca2fec1858a030df29[m
+Author: dytoandyto <otydna1307@gmail.com>
+Date:   Wed Dec 3 09:28:52 2025 +0700
+
+    feat: home, roomTypes, bookingForm, Notification(masih on going)
+
+[33mcommit fc411ef4f4fef6c81e5258f36bf6f1642b50670d[m[33m ([m[1;31morigin/main[m[33m, [m[1;31mandyto/main[m[33m, [m[1;32mmain[m[33m)[m
+Author: dytoandyto <otydna1307@gmail.com>
+Date:   Mon Aug 25 21:13:37 2025 +0700
+
+    feat: splashscreen, onboardingscreen, login register, homepage, profile

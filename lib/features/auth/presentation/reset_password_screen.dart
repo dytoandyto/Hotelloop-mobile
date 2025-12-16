@@ -1,8 +1,7 @@
-// lib/features/auth/screens/reset_password_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_providers.dart';
-import 'AuthScreen.dart';
+import 'auth_screen.dart';
 
 class ResetPasswordScreen extends ConsumerStatefulWidget {
   final String email;
